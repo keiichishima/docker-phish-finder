@@ -4,13 +4,15 @@ services:
     image: keiichi/pp-detector
     build:
       context: .
+      args:
+        - WS_PORT=${WS_PORT}
       dockerfile: ./build-parts/detector/Dockerfile
     container_name: pp-detector
     depends_on:
     #  - pp-extractor
       - pp-wsserver
     ports:
-      - 9999:9999/udp
+      - ${EXTRACTOR_PORT}:${EXTRACTOR_PORT}/udp
     volumes:
       - ./whitelist.txt:/detector/server/whitelist.txt:ro
     restart: always
@@ -21,7 +23,8 @@ services:
     build:
       context: .
       args:
-        - WSSERVER_URL=ws://130.69.250.129:5678
+        - WS_SERVER=${WS_SERVER}
+        - WS_PORT=${WS_PORT}
       dockerfile: ./build-parts/webserver/Dockerfile
     container_name: pp-webserver
     ports:
@@ -35,23 +38,26 @@ services:
     image: keiichi/pp-wsserver
     build:
       context: .
+      args:
+        - WS_PORT=${WS_PORT}
       dockerfile: ./build-parts/wsserver/Dockerfile
     container_name: pp-wsserver
     ports:
-      - 5678:5678
+      - ${WS_PORT}:${WS_PORT}
     restart: always
     logging:
       driver: "journald"
-  #pp-extractor:
-  #  image: keiichi/pp-extractor
-  #  build:
-  #    context: .
-  #    dockerfile: ./build-parts/extractor/Dockerfile
-  #  container_name: pp-extractor
-  #  network_mode: host
-  #  environment:
-  #    - INTERFACE=eth0
-  #    - DETECTOR_ADDRESS=127.0.0.1
-  #  restart: always
-  #  logging:
-  #    driver: "journald"
+  pp-extractor:
+    image: keiichi/pp-extractor
+    build:
+      context: .
+      args:
+        - EXTRACTOR_INTERFACE=${EXTRACTOR_INTERFACE}
+        - EXTRACTOR_PORT=${EXTRACTOR_PORT}
+        - DETECTOR_ADDRESS=${DETECTOR_ADDRESS}
+      dockerfile: ./build-parts/extractor/Dockerfile
+    container_name: pp-extractor
+    network_mode: host
+    restart: always
+    logging:
+      driver: "journald"
