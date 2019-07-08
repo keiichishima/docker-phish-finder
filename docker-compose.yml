@@ -4,15 +4,15 @@ services:
     image: keiichi/pp-detector
     build:
       context: .
-      args:
-        - WS_PORT=${WS_PORT}
       dockerfile: ./build-parts/detector/Dockerfile
     container_name: pp-detector
     depends_on:
-    #  - pp-extractor
+      - pp-extractor
       - pp-wsserver
     ports:
-      - ${EXTRACTOR_PORT}:${EXTRACTOR_PORT}/udp
+      - 9999:9999/udp   # must be same as EXTRACTOR_PORT
+    env_file:
+      - phish-finder.env
     volumes:
       - ./whitelist.txt:/detector/server/whitelist.txt:ro
     restart: always
@@ -22,13 +22,12 @@ services:
     image: keiichi/pp-webserver
     build:
       context: .
-      args:
-        - WS_SERVER=${WS_SERVER}
-        - WS_PORT=${WS_PORT}
       dockerfile: ./build-parts/webserver/Dockerfile
     container_name: pp-webserver
     ports:
       - 8000:80
+    env_file:
+      - phish-finder.env
     depends_on:
       - pp-wsserver
     restart: always
@@ -38,12 +37,12 @@ services:
     image: keiichi/pp-wsserver
     build:
       context: .
-      args:
-        - WS_PORT=${WS_PORT}
       dockerfile: ./build-parts/wsserver/Dockerfile
     container_name: pp-wsserver
     ports:
-      - ${WS_PORT}:${WS_PORT}
+      - 5678:5678       # must be same as WS_PORT
+    env_file:
+      - phish-finder.env
     restart: always
     logging:
       driver: "journald"
@@ -51,13 +50,11 @@ services:
     image: keiichi/pp-extractor
     build:
       context: .
-      args:
-        - EXTRACTOR_INTERFACE=${EXTRACTOR_INTERFACE}
-        - EXTRACTOR_PORT=${EXTRACTOR_PORT}
-        - DETECTOR_ADDRESS=${DETECTOR_ADDRESS}
       dockerfile: ./build-parts/extractor/Dockerfile
     container_name: pp-extractor
     network_mode: host
+    env_file:
+      - phish-finder.env
     restart: always
     logging:
       driver: "journald"
