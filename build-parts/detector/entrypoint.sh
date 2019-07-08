@@ -13,4 +13,4 @@ if [ "X${SLACK_CHANNEL}" != "X" ]; then
 fi
 
 cd /detector/server
-python3 sniffer.py -i urldump -urldumpport ${EXTRACTOR_PORT} -wshost ${WS_HOST} -wsport ${WS_PORT} -logthresh 0.99 ${SLACK_OPTS} -w whitelist.txt
+python3 sniffer.py -urldumpport ${EXTRACTOR_PORT} -wshost ${WS_HOST} -wsport ${WS_PORT} -logthresh 0.99 ${SLACK_OPTS} -w whitelist.txt
